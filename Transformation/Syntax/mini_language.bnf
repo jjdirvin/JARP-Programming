@@ -1,0 +1,59 @@
+USE_LR_PARSER
+
+prog
+
+(* ======================================================================================================= *)
+
+<prog>                      ::= <StatementList> .
+
+<StatementList>             ::= <Statement>";"<StatementList> | <Epsilon> .
+
+<Statement>                 ::= <Declaration> | <Assignment> | <Conditional> |
+                                <Forloop> | <Whileloop> | <Print> | <Pre_inc_dec> | 
+                                <Post_inc_dec> | <Block> .
+
+<Declaration>               ::= "int" variable | "bool" variable .
+
+<Assignment>                ::= variable ":=" <Expression> .
+
+<Print>                     ::= "print" "(" <Expression> ")" .
+
+<Conditional>               ::= "if" "(" <Expression> ")" "then" <Block> "else" <Block> .
+
+<Forloop>                   ::= "for" "(" <Assignment> ";" <Expression> ";" <Assignment> ")"
+                                <Block> .
+
+<Whileloop>                 ::= "while" "(" <Expression> ")" <Block> .
+
+<Block>                     ::= "{" <StatementList> "}" .
+
+<Expression>                ::= <Expression> "or" <AndExpression> | <AndExpression> .
+
+<AndExpression>             ::= <AndExpression> "and" <TerminalLogicExpression> | 
+                                <TerminalLogicExpression> .
+
+<TerminalLogicExpression>   ::= "not" "(" <Expression> ")" | <RelationalExpression> |
+                                "true" | "false" | <RelationalExpression> .
+
+<RelationalExpression>      ::= <MathExpression> ">" <MathExpression> | <MathExpression> "<" <MathExpression> | 
+                                <MathExpression> "=" <MathExpression> | <MathExpression> "!=" <MathExpression> | 
+                                <MathExpression> .
+
+<MathExpression>            ::= <MathExpression> "+" <Term> | <MathExpression> "-" <Term> | 
+                                <Term> .
+
+<Term>                      ::= <Term> "mod" <Exponent> | <Term> "div" <Exponent> | 
+                                <Term> "*" <Exponent> | <Exponent> .
+
+<Exponent>                  ::= <UnaryM> "^" <Exponent> | <UnaryM> .
+
+<UnaryM>                    ::= "-" <Factor> | <Factor> .
+
+<Factor>                    ::= variable | number | "(" <Expression> ")" | "|" <Expression> "|" |
+                                <PreIncDec> | <PostIncDec> .
+
+<PreIncDec>                 ::= "++" variable | "--" variable .
+
+<PostIncDec>                ::= variable "++" | variable "--" .
+
+<Epsilon>                   ::= .
