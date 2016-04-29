@@ -15,13 +15,13 @@ fun getLeaf( term ) = CONCRETE.leavesToStringRaw term
 
 (* For your typeChecker you may want to have a datatype that defines the types 
   (i.e., integer, boolean and possibly error) in your language. *)
-datatype supported_type = FOO
+datatype supported_type = int | bool | ERROR;
 
 
 (* It is recommended that your model store integers and Booleans in an internal form (i.e., as terms belonging to
    a userdefined datatype (e.g., denotable_value). If this is done, the store can be modeled as a list of such values.
 *)
-datatype denotable_value = BAR
+datatype denotable_value = int | bool;
 
 type addr  = int
 type env   = (string * supported_type * addr) list
