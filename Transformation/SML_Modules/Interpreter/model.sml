@@ -44,6 +44,12 @@ fun updateEnv(id, userType:supported_type, m as (e:env, a:addr, s:store)) =
     end;
 
 
+
+(*define printModel here too*)
+(*Ideas: input is a triple: (environment, address, store)*)
+(*output: to print out the environment, store, and addresses in a readable format*)
+
+
 (* =========================================================================================================== *)
 end; (* struct *) 
 (* =========================================================================================================== *)
