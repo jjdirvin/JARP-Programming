@@ -35,10 +35,18 @@ type store = (addr * denotable_value) list
    incremented. *)
 val initialModel = ( []:env, 0:addr, []:store )
 
+fun updateEnv(id, userType:supported_type, m as (e:env, a:addr, s:store)) = 
+    let
+        val newAddr = a+1;
+        val newEnv = (id, userType, a)::e;
+    in
+        (newEnv, newAddr, s)
+    end;
+
+
 (* =========================================================================================================== *)
 end; (* struct *) 
 (* =========================================================================================================== *)
-
 
 
 
