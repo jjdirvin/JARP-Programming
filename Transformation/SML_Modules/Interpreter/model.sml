@@ -43,7 +43,17 @@ fun updateEnv(id, userType:supported_type, m as (e:env, a:addr, s:store)) =
         (newEnv, newAddr, s)
     end;
 
+fun getUpdatedStore(loc:int, dv:denotable_value, []) = (loc, dv)::[]
+    | getUpdatedStore(loc, dv, S as v::vs) = 
+        if(loc= #1 v) then (loc, dv)::vs
+        else v::getUpdatedStore(loc, dv, vs);
 
+fun updateStore(loc:int, dv:denotable_value, m as (e:env, a:addr, s:store)) = 
+        let
+            val newS = getUpdatedStore(loc, dv, s)
+        in
+            (e, a, newS)
+        end;
 
 (*define printModel here too*)
 (*Ideas: input is a triple: (environment, address, store)*)
