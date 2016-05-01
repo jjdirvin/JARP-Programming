@@ -58,7 +58,17 @@ fun accessStore(loc:addr, (e:env, a:addr, []:store)) = raise Fail("Not found in 
   | accessStore(loc:addr, (e:env, a:addr, (loc2, dv)::s:store)) =
       if loc = loc2 then dv else accessStore(loc, (e, a, s));
 
+fun getUpdatedStore(loc:int, dv:denotable_value, []) = (loc, dv)::[]
+    | getUpdatedStore(loc, dv, S as v::vs) = 
+        if(loc= #1 v) then (loc, dv)::vs
+        else v::getUpdatedStore(loc, dv, vs);
 
+fun updateStore(loc:int, dv:denotable_value, m as (e:env, a:addr, s:store)) = 
+        let
+            val newS = getUpdatedStore(loc, dv, s)
+        in
+            (e, a, newS)
+        end;
 
 (*define printModel here too*)
 (*Ideas: input is a triple: (environment, address, store)*)
