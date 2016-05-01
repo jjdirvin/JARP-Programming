@@ -15,13 +15,13 @@ fun getLeaf( term ) = CONCRETE.leavesToStringRaw term
 
 (* For your typeChecker you may want to have a datatype that defines the types 
   (i.e., integer, boolean and possibly error) in your language. *)
-datatype supported_type = int | bool | ERROR;
+datatype supported_type = integer | boolean;
 
 
 (* It is recommended that your model store integers and Booleans in an internal form (i.e., as terms belonging to
    a userdefined datatype (e.g., denotable_value). If this is done, the store can be modeled as a list of such values.
 *)
-datatype denotable_value = int | bool;
+datatype denotable_value = Int of int | Bool of bool;
 
 type addr  = int
 type env   = (string * supported_type * addr) list
@@ -48,6 +48,46 @@ fun updateEnv(id, userType:supported_type, m as (e:env, a:addr, s:store)) =
 (*define printModel here too*)
 (*Ideas: input is a triple: (environment, address, store)*)
 (*output: to print out the environment, store, and addresses in a readable format*)
+
+fun getDVTypeAsString (t) : string = 
+    case t of Bool(t) => "bool"
+            | Int(t) => "int";
+            
+            
+fun getSupportedTypeAsString (st) : string = 
+    case st of integer => "integer"
+            | boolean => "boolean";           
+            
+fun getIntValue (v) : int =
+    case v of Bool(v) => raise Fail("getIntValue: Not int value")
+            | Int(v) => v;
+  
+fun getBoolValue (v) : bool =
+    case v of Bool(v) => v
+            | Int(v) => raise Fail("getBoolValue: Not boolean value");
+  
+fun performAddition (q: denotable_value, r: denotable_value) : int = 
+    if (getDVTypeAsString(q) = "int") andalso (getDVTypeAsString(r) = "int") then (getIntValue(q) + getIntValue(r))
+    else ~1;
+
+
+fun getEnvTripleAsString (s, st, a) : string = 
+     ("( " ^s ^ ", " ^ (getSupportedTypeAsString(st)) ^ ", " ^ (Int.toString(a)) ^ " )\n");
+    
+fun getStrTupleAsString (a, dv) : string =
+    if (getDVTypeAsString(dv) = "int") then ("( " ^ (Int.toString(a)) ^ ", " ^ (Int.toString(getIntValue(dv))) ^ " )\n")
+    else ("( " ^ (Int.toString(a)) ^ ", " ^ (Bool.toString(getBoolValue(dv))) ^ " )\n");
+
+fun printEnvList ( [] )    = print "No items left in Environment List\n\n"
+  | printEnvList ( x::xs ) = (print (getEnvTripleAsString(x)); printEnvList(xs));
+  
+fun printStrList ( [] )    = print "No items left in Store List\n"
+  | printStrList ( x::xs ) = (print (getStrTupleAsString(x)); printStrList(xs));
+  
+  
+fun printModel( envList, counter, strList ) = ( (print "\n--- Environment List ---\n(variable name, type, addr)\n"; (printEnvList(envList))); 
+                                                (print "--- Store List ---\n(addr, value)\n"; (printStrList(strList)));
+                                                (print ("\nCurrent Address Counter: " ^ (Int.toString(counter)) ^ "\n\n--- End of Model ---")) );
 
 
 (* =========================================================================================================== *)
