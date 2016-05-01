@@ -65,12 +65,60 @@ open CONCRETE_REPRESENTATION;
 
 fun M(  itree(inode("prog",_), 
                 [ 
-                    stmt_list, 
+                    StatementList, 
                     period 
                 ] 
              ), 
         m
     ) = m
+    
+  | M( itree(inode("StatementList",_), 
+                [ 
+                    Statement,
+                    itree(inode(";",_), [] ), 
+                    StatementList
+                ] 
+             ), 
+        m
+    ) = M(StatementList, M(Statement, m))
+  
+  | M( itree(inode("Epsilon",_),
+                [
+                    period
+                ]
+            ),
+        m
+    ) = m
+    
+  | M( itree(inode("Block", _),
+                [
+                    itree(inode("(",_), [] ),
+                    StatementList,
+                    itree(inode(")",_), [] )
+                ]
+            ),
+        m
+    ) =
+        let
+            val (env1, addr1, s1) = M(StatementList, m)
+            val m1 = (#1 m, #2 m, s1)
+        in
+            m1
+        end
+  
+  | M( itree(inode("Declaration",_),
+                [
+                    itree(inode("int",_), []),
+                    itree(inode(variable,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val m1 = updateEnv(variable, integer, m)
+        in
+            m1
+        end
         
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
