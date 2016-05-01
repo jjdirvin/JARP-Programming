@@ -141,7 +141,7 @@ fun M(  itree(inode("prog",_),
         in
             m1
         end
-        
+       
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
   | M _ = raise Fail("error in Semantics.M - this should never occur")
