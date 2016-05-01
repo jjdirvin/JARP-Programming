@@ -81,6 +81,14 @@ fun M(  itree(inode("prog",_),
              ), 
         m
     ) = M(StatementList, M(Statement, m))
+    
+  |M( itree(inode("StatementList",_), 
+                [ 
+                    Epsilon
+                ] 
+             ), 
+        m
+    ) = M(Epsilon, m)
   
   | M( itree(inode("Epsilon",_),
                 [
@@ -116,6 +124,20 @@ fun M(  itree(inode("prog",_),
     ) = 
         let
             val m1 = updateEnv(variable, integer, m)
+        in
+            m1
+        end
+        
+  | M( itree(inode("Declaration",_),
+                [
+                    itree(inode("bool",_), []),
+                    itree(inode(variable,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val m1 = updateEnv(variable, boolean, m)
         in
             m1
         end
