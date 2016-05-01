@@ -42,6 +42,21 @@ fun updateEnv(id, userType:supported_type, m as (e:env, a:addr, s:store)) =
     in
         (newEnv, newAddr, s)
     end;
+    
+fun getLoc(loc:addr, t:supported_type) = loc;
+fun getType(loc:addr, t:supported_type) = t;
+
+
+  (* id * m --> (loc, type) *)
+fun accessEnv(id, ([]:env, a:addr, s:store)) = raise Fail("Not found in env")
+  | accessEnv(id, m as ((id2, t, loc)::e:env, a:addr, s:store)) =
+      if id = id2 then (t, loc) else accessEnv(id, (e, a, s));
+      
+      
+(* loc * store -> dv *)
+fun accessStore(loc:addr, (e:env, a:addr, []:store)) = raise Fail("Not found in store")
+  | accessStore(loc:addr, (e:env, a:addr, (loc2, dv)::s:store)) =
+      if loc = loc2 then dv else accessStore(loc, (e, a, s));
 
 
 
