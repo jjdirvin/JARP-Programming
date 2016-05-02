@@ -578,6 +578,70 @@ fun M(  itree(inode("prog",_),
             ),
         m
     ) = WL(Expression, Block, m)
+   
+  | M( itree(inode("PreIncDec",_),
+                [
+                    itree(inode("++",_), []),
+                    itree(inode(variable,_), [x])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
+            val v2 = getIntValue(v1)+1
+            val m2 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
+        in
+            m2
+        end
+        
+  | M( itree(inode("PreIncDec",_),
+                [
+                    itree(inode("--",_), []),
+                    itree(inode(variable,_), [x])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
+            val v2 = getIntValue(v1)-1
+            val m2 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
+        in
+            m2
+        end
+        
+  | M( itree(inode("PostIncDec",_),
+                [
+                    itree(inode(variable,_), [x]),
+                    itree(inode("--",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
+            val v2 = getIntValue(v1)-1
+            val m1 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
+        in
+            m1
+        end
+        
+  | M( itree(inode("PostIncDec",_),
+                [
+                    itree(inode(variable,_), [x]),
+                    itree(inode("++",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
+            val v2 = getIntValue(v1)+1
+            val m1 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
+        in
+             m1
+        end
        
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
