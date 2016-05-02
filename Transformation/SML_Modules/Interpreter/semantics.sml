@@ -63,10 +63,15 @@ open CONCRETE_REPRESENTATION;
             (3) the second child is a semi-colon   
 *)
 
+fun exponent(x, 0) = 1
+    | exponent(x, y) = 
+        if(y<0) then raise Fail("non-integer not supported: exponent")
+        else x*exponent(x, y-1);
+
 fun E( itree(inode("Expression",_),
                 [
                     Expression,
-                    itree(inode("or",_), []),
+                    itree(inode("or",_), [] ),
                     AndExpression
                 ]
             ),
@@ -79,7 +84,7 @@ fun E( itree(inode("Expression",_),
         in
             (Bool(v3), m2)
         end
-        
+            
   | E( itree(inode("AndExpression",_),
                 [
                     AndExpression,
@@ -96,7 +101,7 @@ fun E( itree(inode("Expression",_),
         in
             (Bool(v3), m2)
         end
-        
+          
   | E( itree(inode("TerminalLogicExpression",_),
                 [
                     itree(inode("not",_), []),
@@ -129,7 +134,7 @@ fun E( itree(inode("Expression",_),
             ),
         m
     ) = (Bool(false), m)
-    
+      
   | E( itree(inode("RelationalExpression",_),
                 [
                     MathExpression,
@@ -197,7 +202,253 @@ fun E( itree(inode("Expression",_),
             (Bool(v3), m2)
         end
   
+  | E( itree(inode("MathExpression",_),
+                [
+                    MathExpression,
+                    itree(inode("+",_), []),
+                    Term
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(Term, m1)
+            val v3 = getIntValue(v1) + getIntValue(v2)
+        in
+            (Int(v3), m2)
+        end
+        
+  | E( itree(inode("MathExpression",_),
+                [
+                    MathExpression,
+                    itree(inode("-",_), []),
+                    Term
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(Term, m1)
+            val v3 = getIntValue(v1) - getIntValue(v2)
+        in
+            (Int(v3), m2)
+        end
+        
+  | E( itree(inode("Term",_),
+                [
+                    Term,
+                    itree(inode("mod",_), []),
+                    Exponent
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Term, m)
+            val (v2, m2) = E(Exponent, m1)
+        in
+            if getIntValue(v2) = 0 then raise Fail("Divide by 0!")
+            else 
+                let
+                    val v3 = (getIntValue(v1) mod getIntValue(v2))
+                in
+                    (Int(v3), m2)
+                end
+        end
+        
+  | E( itree(inode("Term",_),
+                [
+                    Term,
+                    itree(inode("div",_), []),
+                    Exponent
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Term, m)
+            val (v2, m2) = E(Exponent, m1)
+        in
+            if getIntValue(v2) = 0 then raise Fail("Divide by 0!")
+            else 
+                let
+                    val v3 = (getIntValue(v1) div getIntValue(v2))
+                in
+                    (Int(v3), m2)
+                end
+        end
+        
+  | E( itree(inode("Term",_),
+                [
+                    Term,
+                    itree(inode("*",_), []),
+                    Exponent
+                ]
+            ),
+        m
+    ) =
+        let
+            val (v1, m1) = E(Term, m)
+            val (v2, m2) = E(Exponent, m1)
+            val v3 = (getIntValue(v1) * getIntValue(v2))
+        in
+            (Int(v3), m2)
+        end
+        
+  | E( itree(inode("Exponent",_),
+                [
+                    UnaryM,
+                    itree(inode("^",_), []),
+                    Exponent
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(UnaryM, m)
+            val (v2, m2) = E(Exponent, m1)
+            val v3 = exponent(getIntValue(v1), getIntValue(v2))
+        in
+            (Int(v3), m2)
+        end
+        
+  | E( itree(inode("UnaryM",_),
+                [
+                    itree(inode("-",_), []),
+                    Factor
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Factor, m)
+            val v2 = ~1 * getIntValue(v1)
+        in
+            (Int(v2), m1)
+        end
   
+  | E( itree(inode("Factor",_),
+                [
+                    itree(inode("(",_), []),
+                    Expression,
+                    itree(inode(")",_), [])
+                ]
+            ),
+        m
+    ) = E(Expression, m)
+    
+  | E( itree(inode("Factor",_),
+                [
+                    itree(inode("|",_), []),
+                    Expression,
+                    itree(inode("|",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Expression, m)
+        in
+            if(getIntValue(v1)>0) then (v1, m1)
+            else (Int(getIntValue(v1) * ~1), m1)
+        end
+   
+  | E( itree(inode("Factor",_),
+                [
+                    itree(inode(variable,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+        in
+            (v1, m)
+        end
+
+  | E( itree(inode("Factor",_),
+                [
+                    itree(inode(number,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = Int.fromString(number)
+            val v2 = getOpt(v1, 0)
+        in
+            (Int(v2), m)
+        end
+        
+  | E( itree(inode("PreIncDec",_),
+                [
+                    itree(inode("++",_), []),
+                    itree(inode(variable,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v2 = getIntValue(v1)+1
+            val m2 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+        in
+            (Int(v2), m2)
+        end
+        
+  | E( itree(inode("PreIncDec",_),
+                [
+                    itree(inode("--",_), []),
+                    itree(inode(variable,_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v2 = getIntValue(v1)-1
+            val m2 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+        in
+            (Int(v2), m2)
+        end
+        
+  | E( itree(inode("PostIncDec",_),
+                [
+                    itree(inode(variable,_), []),
+                    itree(inode("--",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v2 = getIntValue(v1)-1
+            val m1 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+        in
+            (v1, m1)
+        end
+        
+  | E( itree(inode("PostIncDec",_),
+                [
+                    itree(inode(variable,_), []),
+                    itree(inode("++",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v2 = getIntValue(v1)+1
+            val m1 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+        in
+            (v1, m1)
+        end
+        
+  | E(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn E root = " ^ x_root ^ "\n\n")
+  
+  | E _ = raise Fail("error in Semantics.E - this should never occur")
 
 fun M(  itree(inode("prog",_), 
                 [ 
@@ -281,7 +532,8 @@ fun M(  itree(inode("prog",_),
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
   | M _ = raise Fail("error in Semantics.M - this should never occur")
-  
+
+(*
 fun FL(expr, assignment, block, m) = 
     let
         val (v1, m1) = E(expr, m)
@@ -297,6 +549,7 @@ fun FL(expr, assignment, block, m) =
         else
             m1
     end
+    *)
 
 (* =========================================================================================================== *)
 end (* struct *)
