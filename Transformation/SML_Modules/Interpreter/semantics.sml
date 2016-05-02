@@ -551,6 +551,35 @@ fun M(  itree(inode("prog",_),
                     itree(inode("(",_), [])
                     Assignment1
                     itree(inode(";",_), [])
+                    Expression
+                    itree(inode(";",_), [])
+                    Assignment2
+                    itree(inode(")",_), [])
+                    Block
+                ]
+            ),
+        m
+    ) =
+        let
+          val m1 = M(Assignment1, m)
+          val m2 = FL(Expression, Assignment2, Block, m1)
+        in
+          m1
+        end
+
+  | M( itree(inode("Whileloop",_),
+                [
+                    itree(inode("while",_), [])
+                    itree(inode("(",_), [])
+                    Expression
+                    itree(inode(")",_), [])
+                    Block
+                ]
+            ),
+        m
+    ) = WL(Expression, Block, m);
+
+                    
        
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
@@ -573,10 +602,28 @@ fun FL(expr, assignment, block, m) =
             m1
     end
     *)
+    
+fun WL(expr, block, m) =
+  let
+      val (v1, m1) = E(expr, m)
+  in
+      if getBoolValue(v1) then
+          let
+              val m2 = M(block, m1)
+              val m3 = WL(expr, block, m2)
+          in
+            m3
+          end
+      else
+          m1
+  end;
+
+
 
 (* =========================================================================================================== *)
 end (* struct *)
 (* =========================================================================================================== *)
+
 
 
 
