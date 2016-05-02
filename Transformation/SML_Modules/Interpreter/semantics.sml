@@ -385,7 +385,7 @@ fun E( itree(inode("Expression",_),
   | E( itree(inode("PreIncDec",_),
                 [
                     itree(inode("++",_), []),
-                    itree(inode(variable,_), [x])
+                    itree(inode("variable",_), [x])
                 ]
             ),
         m
@@ -401,7 +401,7 @@ fun E( itree(inode("Expression",_),
   | E( itree(inode("PreIncDec",_),
                 [
                     itree(inode("--",_), []),
-                    itree(inode(variable,_), [x])
+                    itree(inode("variable",_), [x])
                 ]
             ),
         m
@@ -416,7 +416,7 @@ fun E( itree(inode("Expression",_),
         
   | E( itree(inode("PostIncDec",_),
                 [
-                    itree(inode(variable,_), [x]),
+                    itree(inode("variable",_), [x]),
                     itree(inode("--",_), [])
                 ]
             ),
@@ -432,7 +432,7 @@ fun E( itree(inode("Expression",_),
         
   | E( itree(inode("PostIncDec",_),
                 [
-                    itree(inode(variable,_), [x]),
+                    itree(inode("variable",_), [x]),
                     itree(inode("++",_), [])
                 ]
             ),
@@ -531,8 +531,8 @@ fun M(  itree(inode("prog",_),
    
   | M( itree(inode("Assignment",_),
                 [
-                    itree(inode("variable",_), [x])
-                    itree(inode(":=",_), [])
+                    itree(inode("variable",_), [x]),
+                    itree(inode(":=",_), []),
                     Expression
                 ]
             ),
@@ -545,19 +545,45 @@ fun M(  itree(inode("prog",_),
             m1
         end
 
-  | M( itree(inode("Forloop",_),
+    | M( itree(inode("Forloop",_),
                 [
-                    itree(inode("for",_), [])
-                    itree(inode("(",_), [])
-                    Assignment1
-                    itree(inode(";",_), [])
+                    itree(inode("for",_), []),
+                    itree(inode("(",_), []),
+                    Assignment1,
+                    itree(inode(";",_), []),
+                    Expression,
+                    itree(inode(";",_), []),
+                    Assignment2,
+                    itree(inode(")",_), []),
+                    Block
+                ]
+            ),
+        m
+    ) =
+        let
+          val m1 = M(Assignment1, m)
+          val m2 = FL(Expression, Assignment2, Block, m1)
+        in
+          m1
+        end
+       
+  | M( itree(inode("Whileloop",_),
+                [
+                    itree(inode("while",_), []),
+                    itree(inode("(",_), []),
+                    Expression,
+                    itree(inode(")",_), []),
+                    Block
+                ]
+            ),
+        m
+    ) = WL(Expression, Block, m)
        
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
   | M _ = raise Fail("error in Semantics.M - this should never occur")
 
-(*
-fun FL(expr, assignment, block, m) = 
+and FL(expr, assignment, block, m) = 
     let
         val (v1, m1) = E(expr, m)
     in
@@ -572,7 +598,21 @@ fun FL(expr, assignment, block, m) =
         else
             m1
     end
-    *)
+    
+and WL(expr, block, m) =
+  let
+      val (v1, m1) = E(expr, m)
+  in
+      if getBoolValue(v1) then
+          let
+              val m2 = M(block, m1)
+              val m3 = WL(expr, block, m2)
+          in
+            m3
+          end
+      else
+          m1
+  end
 
 (* =========================================================================================================== *)
 end (* struct *)
