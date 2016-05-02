@@ -500,16 +500,17 @@ fun M(  itree(inode("prog",_),
             m1
         end
         
+
   | M( itree(inode("Declaration",_),
                 [
                     itree(inode("int",_), []),
-                    itree(inode(variable,_), [])
+                    itree(inode("variable",_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val m1 = updateEnv(variable, integer, m)
+            val m1 = updateEnv(getLeaf(x), integer, m)
         in
             m1
         end
@@ -517,16 +518,39 @@ fun M(  itree(inode("prog",_),
   | M( itree(inode("Declaration",_),
                 [
                     itree(inode("bool",_), []),
-                    itree(inode(variable,_), [])
+                    itree(inode("variable",_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val m1 = updateEnv(variable, boolean, m)
+            val m1 = updateEnv(getLeaf(x), boolean, m)
         in
             m1
         end
+   
+  | M( itree(inode("Assignment",_),
+                [
+                    itree(inode("variable",_), [x])
+                    itree(inode(":=",_), [])
+                    Expression
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Expression, m)
+            val m2 = updateStore(getLoc(accessEnv(getLeaf(x), m1)), v1, m1)
+        in
+            m1
+        end
+
+  | M( itree(inode("Forloop",_),
+                [
+                    itree(inode("for",_), [])
+                    itree(inode("(",_), [])
+                    Assignment1
+                    itree(inode(";",_), [])
        
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
