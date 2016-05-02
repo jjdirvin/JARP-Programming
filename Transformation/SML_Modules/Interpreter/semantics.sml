@@ -500,7 +500,27 @@ fun M(  itree(inode("prog",_),
             m1
         end
         
-
+  | M( itree(inode("Conditional",_),
+                [
+                    itree(inode("if",_), [])
+                    itree(inode("(",_), [])
+                    Expression
+                    itree(inode(")",_), [])
+                    itree(inode("then",_), [])
+                    Block1
+                    itree(inode("else",_), [])
+                    Block2
+                ]
+            ),
+        m
+    ) =
+        let
+          val (v1, m1) = E(Expression, m)
+        in
+          if v1 then M(Block1, m1)
+          else M(Block2, m1)
+        end
+        
   | M( itree(inode("Declaration",_),
                 [
                     itree(inode("int",_), []),
