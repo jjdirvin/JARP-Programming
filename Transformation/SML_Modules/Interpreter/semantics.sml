@@ -357,26 +357,26 @@ fun E( itree(inode("Expression",_),
    
   | E( itree(inode("Factor",_),
                 [
-                    itree(inode(variable,_), [])
+                    itree(inode("variable",_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
         in
             (v1, m)
         end
 
   | E( itree(inode("Factor",_),
                 [
-                    itree(inode(number,_), [])
+                    itree(inode("number",_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = Int.fromString(number)
+            val v1 = Int.fromString(getLeaf(x))
             val v2 = getOpt(v1, 0)
         in
             (Int(v2), m)
@@ -385,15 +385,15 @@ fun E( itree(inode("Expression",_),
   | E( itree(inode("PreIncDec",_),
                 [
                     itree(inode("++",_), []),
-                    itree(inode(variable,_), [])
+                    itree(inode(variable,_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
             val v2 = getIntValue(v1)+1
-            val m2 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+            val m2 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
         in
             (Int(v2), m2)
         end
@@ -401,47 +401,47 @@ fun E( itree(inode("Expression",_),
   | E( itree(inode("PreIncDec",_),
                 [
                     itree(inode("--",_), []),
-                    itree(inode(variable,_), [])
+                    itree(inode(variable,_), [x])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
             val v2 = getIntValue(v1)-1
-            val m2 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+            val m2 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
         in
             (Int(v2), m2)
         end
         
   | E( itree(inode("PostIncDec",_),
                 [
-                    itree(inode(variable,_), []),
+                    itree(inode(variable,_), [x]),
                     itree(inode("--",_), [])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
             val v2 = getIntValue(v1)-1
-            val m1 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+            val m1 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
         in
             (v1, m1)
         end
         
   | E( itree(inode("PostIncDec",_),
                 [
-                    itree(inode(variable,_), []),
+                    itree(inode(variable,_), [x]),
                     itree(inode("++",_), [])
                 ]
             ),
         m
     ) = 
         let
-            val v1 = accessStore(getLoc(accessEnv(variable, m)), m)
+            val v1 = accessStore(getLoc(accessEnv(getLeaf(x), m)), m)
             val v2 = getIntValue(v1)+1
-            val m1 = updateStore(getLoc(accessEnv(variable, m)), Int(v2), m)
+            val m1 = updateStore(getLoc(accessEnv(getLeaf(x), m)), Int(v2), m)
         in
             (v1, m1)
         end
@@ -479,7 +479,6 @@ fun M(  itree(inode("prog",_),
   
   | M( itree(inode("Epsilon",_),
                 [
-                    period
                 ]
             ),
         m
