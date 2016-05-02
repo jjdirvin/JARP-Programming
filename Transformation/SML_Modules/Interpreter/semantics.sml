@@ -63,6 +63,142 @@ open CONCRETE_REPRESENTATION;
             (3) the second child is a semi-colon   
 *)
 
+fun E( itree(inode("Expression",_),
+                [
+                    Expression,
+                    itree(inode("or",_), []),
+                    AndExpression
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Expression, m)
+            val (v2, m2) = E(AndExpression, m1)
+            val v3 = getBoolValue(v1) orelse getBoolValue(v2)
+        in
+            (Bool(v3), m2)
+        end
+        
+  | E( itree(inode("AndExpression",_),
+                [
+                    AndExpression,
+                    itree(inode("and",_), []),
+                    TerminalLogicExpression
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(AndExpression, m)
+            val (v2, m2) = E(TerminalLogicExpression, m1)
+            val v3 = getBoolValue(v1) andalso getBoolValue(v2)
+        in
+            (Bool(v3), m2)
+        end
+        
+  | E( itree(inode("TerminalLogicExpression",_),
+                [
+                    itree(inode("not",_), []),
+                    itree(inode("(",_), []),
+                    Expression,
+                    itree(inode(")",_), [])
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(Expression, m)
+            val v2 = not(getBoolValue(v1))
+        in
+            (Bool(v2), m1)
+        end
+        
+  | E( itree(inode("TerminalLogicExpression",_),
+                [
+                    itree(inode("true",_), [])
+                ]
+            ),
+        m
+    ) = (Bool(true), m)
+  
+  | E( itree(inode("TerminalLogicExpression",_),
+                [
+                    itree(inode("false",_), [])
+                ]
+            ),
+        m
+    ) = (Bool(false), m)
+    
+  | E( itree(inode("RelationalExpression",_),
+                [
+                    MathExpression,
+                    itree(inode(">",_), []),
+                    MathExpression1
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(MathExpression1, m1)
+            val v3 = (getIntValue(v1) > getIntValue(v2))
+        in
+            (Bool(v3), m2)
+        end
+        
+  | E( itree(inode("RelationalExpression",_),
+                [
+                    MathExpression,
+                    itree(inode("<",_), []),
+                    MathExpression1
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(MathExpression1, m1)
+            val v3 = (getIntValue(v1) < getIntValue(v2))
+        in
+            (Bool(v3), m2)
+        end
+  | E( itree(inode("RelationalExpression",_),
+                [
+                    MathExpression,
+                    itree(inode("=",_), []),
+                    MathExpression1
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(MathExpression1, m1)
+            val v3 = (getIntValue(v1) = getIntValue(v2))
+        in
+            (Bool(v3), m2)
+        end
+  
+  | E( itree(inode("RelationalExpression",_),
+                [
+                    MathExpression,
+                    itree(inode("!=",_), []),
+                    MathExpression1
+                ]
+            ),
+        m
+    ) = 
+        let
+            val (v1, m1) = E(MathExpression, m)
+            val (v2, m2) = E(MathExpression1, m1)
+            val v3 = not(getIntValue(v1) = getIntValue(v2))
+        in
+            (Bool(v3), m2)
+        end
+  
+  
+
 fun M(  itree(inode("prog",_), 
                 [ 
                     StatementList, 
@@ -113,7 +249,7 @@ fun M(  itree(inode("prog",_),
         in
             m1
         end
-  
+        
   | M( itree(inode("Declaration",_),
                 [
                     itree(inode("int",_), []),
@@ -145,6 +281,22 @@ fun M(  itree(inode("prog",_),
   | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   
   | M _ = raise Fail("error in Semantics.M - this should never occur")
+  
+fun FL(expr, assignment, block, m) = 
+    let
+        val (v1, m1) = E(expr, m)
+    in
+        if getBoolValue(v1) then
+            let
+                val m2 = M(block, m1)
+                val m3 = M(assignment, m2)
+                val m4 = FL(expr, assignment, block, m3)
+            in
+                m4
+            end
+        else
+            m1
+    end
 
 (* =========================================================================================================== *)
 end (* struct *)
