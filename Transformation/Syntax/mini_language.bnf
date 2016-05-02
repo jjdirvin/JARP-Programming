@@ -32,8 +32,8 @@ prog
 <AndExpression>             ::= <AndExpression> "and" <TerminalLogicExpression> | 
                                 <TerminalLogicExpression> .
 
-<TerminalLogicExpression>   ::= "not" "(" <Expression> ")" | <RelationalExpression> |
-                                "true" | "false" | <RelationalExpression> .
+<TerminalLogicExpression>   ::= "not" "(" <Expression> ")" | "true" | "false" | 
+                                <RelationalExpression> .
 
 <RelationalExpression>      ::= <MathExpression> ">" <MathExpression> | <MathExpression> "<" <MathExpression> | 
                                 <MathExpression> "=" <MathExpression> | <MathExpression> "!=" <MathExpression> | 
