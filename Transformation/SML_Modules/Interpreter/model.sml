@@ -57,7 +57,7 @@ fun getType(loc:addr, t:supported_type) = t;
   (* id * m --> (loc, type) *)
 fun accessEnv(id, ([]:env, a:addr, s:store)) = raise Fail("Not found in env")
   | accessEnv(id, m as ((id2, t, loc)::e:env, a:addr, s:store)) =
-      if id = id2 then (t, loc) else accessEnv(id, (e, a, s));
+      if id = id2 then (loc, t) else accessEnv(id, (e, a, s));
       
       
 (* loc * store -> dv *)
