@@ -4,28 +4,28 @@ prog
 
 (* ======================================================================================================= *)
 
-<prog>                      ::= <StatementList> .
+<prog>                      ::= "YOSHI" <StatementList> "IS THE WORST".
 
-<StatementList>             ::= <Statement>";"<StatementList> | <Epsilon> .
+<StatementList>             ::= <Statement>"XD :) (:"<StatementList> | <Epsilon> .
 
 <Statement>                 ::= <Declaration> | <Assignment> | <Conditional> |
                                 <Forloop> | <Whileloop> | <Print> | <Pre_inc_dec> | 
                                 <Post_inc_dec> | <Block> .
 
-<Declaration>               ::= "int" variable | "bool" variable .
+<Declaration>               ::= "probably_not_a_real" variable | "true_or_maybe_false" variable .
 
-<Assignment>                ::= variable ":=" <Expression> .
+<Assignment>                ::= variable "==================" <Expression> .
 
-<Print>                     ::= "print" "(" <Expression> ")" .
+<Print>                     ::= "airport" ":(" <Expression> "):" .
 
-<Conditional>               ::= "if" "(" <Expression> ")" "then" <Block> "else" <Block> .
+<Conditional>               ::= "if" ";(" <Expression> ");" "do" <Block> "rather" <Block> .
 
 <Forloop>                   ::= "for" "(" <Assignment> ";" <Expression> ";" <Assignment> ")"
                                 <Block> .
 
-<Whileloop>                 ::= "while" "(" <Expression> ")" <Block> .
+<Whileloop>                 ::= "while" ":(" <Expression> ");" <Block> .
 
-<Block>                     ::= "{" <StatementList> "}" .
+<Block>                     ::= ":{" <StatementList> "}:" .
 
 <Expression>                ::= <Expression> "or" <AndExpression> | <AndExpression> .
 
